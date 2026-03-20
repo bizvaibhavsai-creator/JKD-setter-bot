@@ -1,0 +1,17 @@
+{
+  "lead_id": "lead_12345",
+  "thread_id": "thread_98765",
+  "prospect_email": "prospect@example.com",
+  "prospect_name": "John Doe",
+  "reply_text": "This sounds interesting. Can you send me pricing and a few more details?",
+  "original_subject": "Quick question",
+  "campaign_name": "Q2 outbound",
+  "company_name": "Acme Inc",
+  "sender_name": "Vaibhav",
+  "sender_email": "vaibhav@yourcompany.com",
+  "google_doc_url": "https://docs.google.com/document/d/YOUR_GOOGLE_DOC_ID/edit",
+  "sheet_document_id": "YOUR_GOOGLE_SHEET_ID",
+  "sheet_name": "Leads",
+  "send_reply_url": "https://your-cold-email-tool.example.com/api/replies/send",
+  "send_bearer_token": "YOUR_API_TOKEN"
+}

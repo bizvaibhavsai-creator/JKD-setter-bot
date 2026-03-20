@@ -1,0 +1,549 @@
+{
+  "name": "Cold Reply Setter Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Cold Reply Setter Automation\n\nThis workflow expects your cold email platform to POST reply data into the webhook.\n\nRequired webhook body fields:\n- `lead_id`\n- `thread_id`\n- `prospect_email`\n- `prospect_name` (optional)\n- `reply_text`\n- `send_reply_url` -> endpoint that actually sends the reply in your cold email tool\n- `google_doc_url` -> Google Doc with setter playbook / reply instructions\n- `sheet_document_id` -> Google Sheet ID\n- `sheet_name` -> tab name\n\nOptional webhook body fields:\n- `send_bearer_token`\n- `original_subject`\n- `campaign_name`\n- `company_name`\n- `sender_name`\n- `sender_email`\n\nGoogle Sheet expected columns:\n- `lead_id`\n- `thread_id`\n- `prospect_email`\n- `classification`\n- `sheet_status`\n- `reply_subject`\n- `reply_body`\n- `last_reply_text`\n- `updated_at`\n\nAfter import:\n1. Connect your Google Docs credential.\n2. Connect your Google Sheets credential.\n3. Connect your OpenAI credential.\n4. Point `send_reply_url` to your cold email platform reply endpoint.\n5. Make sure your sheet already has the columns above.\n\nIf your send API needs a different body shape, only edit the `Send Reply` node.",
+        "height": 760,
+        "width": 520,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1480,
+        -240
+      ],
+      "id": "eb0f97e0-c8d4-4c5d-8e93-setupnote0001",
+      "name": "Setup Notes"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cold-reply-setter",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1240,
+        80
+      ],
+      "id": "7e61142f-8d23-4e2f-b688-webhook000001",
+      "name": "Webhook",
+      "webhookId": "cold-reply-setter"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "lead_id",
+              "name": "lead_id",
+              "type": "string",
+              "value": "={{ $json.body.lead_id || $json.lead_id || '' }}"
+            },
+            {
+              "id": "thread_id",
+              "name": "thread_id",
+              "type": "string",
+              "value": "={{ $json.body.thread_id || $json.thread_id || '' }}"
+            },
+            {
+              "id": "prospect_email",
+              "name": "prospect_email",
+              "type": "string",
+              "value": "={{ $json.body.prospect_email || $json.prospect_email || '' }}"
+            },
+            {
+              "id": "prospect_name",
+              "name": "prospect_name",
+              "type": "string",
+              "value": "={{ $json.body.prospect_name || $json.prospect_name || '' }}"
+            },
+            {
+              "id": "reply_text",
+              "name": "reply_text",
+              "type": "string",
+              "value": "={{ $json.body.reply_text || $json.reply_text || '' }}"
+            },
+            {
+              "id": "original_subject",
+              "name": "original_subject",
+              "type": "string",
+              "value": "={{ $json.body.original_subject || $json.original_subject || '' }}"
+            },
+            {
+              "id": "campaign_name",
+              "name": "campaign_name",
+              "type": "string",
+              "value": "={{ $json.body.campaign_name || $json.campaign_name || '' }}"
+            },
+            {
+              "id": "company_name",
+              "name": "company_name",
+              "type": "string",
+              "value": "={{ $json.body.company_name || $json.company_name || '' }}"
+            },
+            {
+              "id": "sender_name",
+              "name": "sender_name",
+              "type": "string",
+              "value": "={{ $json.body.sender_name || $json.sender_name || 'Sales Team' }}"
+            },
+            {
+              "id": "sender_email",
+              "name": "sender_email",
+              "type": "string",
+              "value": "={{ $json.body.sender_email || $json.sender_email || '' }}"
+            },
+            {
+              "id": "send_reply_url",
+              "name": "send_reply_url",
+              "type": "string",
+              "value": "={{ $json.body.send_reply_url || $json.send_reply_url || '' }}"
+            },
+            {
+              "id": "send_bearer_token",
+              "name": "send_bearer_token",
+              "type": "string",
+              "value": "={{ $json.body.send_bearer_token || $json.send_bearer_token || '' }}"
+            },
+            {
+              "id": "google_doc_url",
+              "name": "google_doc_url",
+              "type": "string",
+              "value": "={{ $json.body.google_doc_url || $json.google_doc_url || 'https://docs.google.com/document/d/YOUR_GOOGLE_DOC_ID/edit' }}"
+            },
+            {
+              "id": "sheet_document_id",
+              "name": "sheet_document_id",
+              "type": "string",
+              "value": "={{ $json.body.sheet_document_id || $json.sheet_document_id || 'YOUR_GOOGLE_SHEET_ID' }}"
+            },
+            {
+              "id": "sheet_name",
+              "name": "sheet_name",
+              "type": "string",
+              "value": "={{ $json.body.sheet_name || $json.sheet_name || 'Leads' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1020,
+        80
+      ],
+      "id": "9b182f29-83a8-4292-a2d4-normalize0001",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $json.google_doc_url }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        -80
+      ],
+      "id": "e68caeaf-2b3c-4588-b7a7-googledocs0001",
+      "name": "Get Google Doc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $input.first().json;\n\nfunction collectText(value, out = []) {\n  if (value === null || value === undefined) return out;\n\n  if (typeof value === 'string') {\n    const trimmed = value.trim();\n    if (trimmed) out.push(trimmed);\n    return out;\n  }\n\n  if (Array.isArray(value)) {\n    for (const item of value) collectText(item, out);\n    return out;\n  }\n\n  if (typeof value === 'object') {\n    if (typeof value.text === 'string') out.push(value.text);\n    if (typeof value.content === 'string') out.push(value.content);\n    if (typeof value.plainText === 'string') out.push(value.plainText);\n    if (typeof value.title === 'string') out.push(value.title);\n    if (value.textRun && typeof value.textRun.content === 'string') out.push(value.textRun.content);\n\n    for (const key of Object.keys(value)) {\n      if (['text', 'content', 'plainText', 'title', 'textRun'].includes(key)) continue;\n      collectText(value[key], out);\n    }\n  }\n\n  return out;\n}\n\nconst chunks = collectText(source, []);\nconst seen = new Set();\nconst unique = chunks\n  .map((chunk) => chunk.replace(/\\s+/g, ' ').trim())\n  .filter((chunk) => chunk && !seen.has(chunk) && seen.add(chunk));\n\nreturn [\n  {\n    json: {\n      playbook_text: unique.join('\\n').slice(0, 12000),\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -580,
+        -80
+      ],
+      "id": "d5d26af5-f761-4ea3-ae85-docparser000001",
+      "name": "Extract Playbook Text"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -360,
+        80
+      ],
+      "id": "619e6b33-4f0f-4ddb-b7f9-mergecontext001",
+      "name": "Merge Context"
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "model": "gpt-4o-mini",
+        "additionalFields": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "=You are an expert cold-email setter assistant.\n\nYour job:\n1. Analyze the prospect reply.\n2. Classify it into exactly one of these labels: interested, not_interested, objection, out_of_office, referral, booked, wrong_person, follow_up_needed.\n3. Use the Google Doc playbook as the source of truth for tone and reply logic.\n4. Draft a human-sounding email reply.\n5. Return strict JSON only.\n\nRules:\n- Be concise and natural.\n- Never sound robotic.\n- If the prospect is clearly not interested, politely close the conversation.\n- If they ask a question or object, answer using the playbook if possible.\n- If the playbook is missing specifics, write the safest professional response.\n- Keep line breaks in the reply_body.\n- Do not include markdown fences.\n\nReturn JSON with exactly these keys:\n{\n  \"classification\": \"interested | not_interested | objection | out_of_office | referral | booked | wrong_person | follow_up_needed\",\n  \"sheet_status\": \"short status for google sheet\",\n  \"confidence\": 0.0,\n  \"reason\": \"one short sentence\",\n  \"reply_subject\": \"email subject\",\n  \"reply_body\": \"email body\"\n}"
+            },
+            {
+              "role": "user",
+              "content": "={{ `Prospect name: ${$json.prospect_name || 'Unknown'}\nProspect email: ${$json.prospect_email}\nThread ID: ${$json.thread_id}\nOriginal subject: ${$json.original_subject || 'N/A'}\nCampaign name: ${$json.campaign_name || 'N/A'}\nCompany name: ${$json.company_name || 'N/A'}\nSender name: ${$json.sender_name || 'Sales Team'}\n\nProspect reply:\n${$json.reply_text}\n\nGoogle Doc playbook:\n${$json.playbook_text || 'No playbook text found.'}` }}"
+            }
+          ],
+          "temperature": 0.2
+        }
+      },
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        80
+      ],
+      "id": "4e6914f1-9e8a-4db9-a3a2-openai0000001",
+      "name": "Analyze And Draft"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\n\nfunction getContent(data) {\n  if (typeof data?.choices?.[0]?.message?.content === 'string') return data.choices[0].message.content;\n  if (typeof data?.choices?.[0]?.text === 'string') return data.choices[0].text;\n  if (typeof data?.text === 'string') return data.text;\n  return JSON.stringify(data);\n}\n\nconst content = getContent(raw).trim();\nlet parsed;\n\ntry {\n  parsed = JSON.parse(content);\n} catch {\n  const match = content.match(/\\{[\\s\\S]*\\}/);\n  if (!match) {\n    throw new Error('OpenAI response was not valid JSON: ' + content);\n  }\n  parsed = JSON.parse(match[0]);\n}\n\nreturn [\n  {\n    json: {\n      classification: parsed.classification || 'follow_up_needed',\n      sheet_status: parsed.sheet_status || parsed.classification || 'follow_up_needed',\n      confidence: parsed.confidence ?? 0,\n      reason: parsed.reason || '',\n      reply_subject: parsed.reply_subject || 'Re: Your reply',\n      reply_body: parsed.reply_body || 'Thanks for your reply.',\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        80
+      ],
+      "id": "3cb6f1bf-b7ce-451e-a2ce-aiparse000001",
+      "name": "Parse AI JSON"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        340,
+        80
+      ],
+      "id": "2daaeb5f-b4e4-47c4-b4b9-mergefinal0001",
+      "name": "Merge Final Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.send_reply_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.send_bearer_token ? `Bearer ${$json.send_bearer_token}` : '' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  lead_id: $json.lead_id,\n  thread_id: $json.thread_id,\n  to: $json.prospect_email,\n  subject: $json.reply_subject,\n  body: $json.reply_body,\n  classification: $json.classification,\n  metadata: {\n    reason: $json.reason,\n    confidence: $json.confidence,\n    original_subject: $json.original_subject,\n    campaign_name: $json.campaign_name\n  }\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        580,
+        80
+      ],
+      "id": "d7ce7370-41b8-4f18-89f1-sendreply00001",
+      "name": "Send Reply"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.sheet_document_id }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $json.sheet_name }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lead_id": "={{ $json.lead_id }}",
+            "thread_id": "={{ $json.thread_id }}",
+            "prospect_email": "={{ $json.prospect_email }}",
+            "classification": "={{ $json.classification }}",
+            "sheet_status": "={{ $json.sheet_status }}",
+            "reply_subject": "={{ $json.reply_subject }}",
+            "reply_body": "={{ $json.reply_body }}",
+            "last_reply_text": "={{ $json.reply_text }}",
+            "updated_at": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "lead_id"
+          ],
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "thread_id",
+              "displayName": "thread_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prospect_email",
+              "displayName": "prospect_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "classification",
+              "displayName": "classification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sheet_status",
+              "displayName": "sheet_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reply_subject",
+              "displayName": "reply_subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reply_body",
+              "displayName": "reply_body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_reply_text",
+              "displayName": "last_reply_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        820,
+        80
+      ],
+      "id": "cf5cc64f-f9ca-4606-b593-gsheetupdate001",
+      "name": "Update Google Sheet"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  ok: true,\n  lead_id: $json.lead_id,\n  thread_id: $json.thread_id,\n  classification: $json.classification,\n  sheet_status: $json.sheet_status,\n  reply_subject: $json.reply_subject,\n  reply_body: $json.reply_body\n} }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1060,
+        80
+      ],
+      "id": "b436a3a2-bd6d-4f9e-9adf-respond000001",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Get Google Doc",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Google Doc": {
+      "main": [
+        [
+          {
+            "node": "Extract Playbook Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Playbook Text": {
+      "main": [
+        [
+          {
+            "node": "Merge Context",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Context": {
+      "main": [
+        [
+          {
+            "node": "Analyze And Draft",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Final Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Analyze And Draft": {
+      "main": [
+        [
+          {
+            "node": "Parse AI JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI JSON": {
+      "main": [
+        [
+          {
+            "node": "Merge Final Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Final Data": {
+      "main": [
+        [
+          {
+            "node": "Send Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reply": {
+      "main": [
+        [
+          {
+            "node": "Update Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1d4d6cb3-f8c0-4d9a-95ef-1ca419f40c35",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "id": "cold-reply-setter-workflow",
+  "tags": []
+}
