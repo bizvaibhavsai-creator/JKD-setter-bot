@@ -94,12 +94,34 @@ docker compose up -d --build
 
 Then put Nginx or Caddy in front of port `3000`.
 
+## Deploy on Vercel
+
+This repo is Vercel-ready.
+
+1. Import the GitHub repo into Vercel.
+2. Add all variables from [.env.example](/Users/vaibhavsai/Downloads/JKD setter MVP/.env.example) into the Vercel project settings.
+3. Leave the framework preset as `Other`.
+4. Deploy.
+
+Your endpoints will be:
+
+- `/api/healthz`
+- `/api/webhooks/instantly?token=YOUR_SECRET`
+
+For Instantly webhook registration on Vercel, use:
+
+```bash
+export PUBLIC_BASE_URL=https://your-vercel-domain.vercel.app
+npm run register:webhook
+```
+
 ## How it behaves
 
 - `reply_received` is processed
 - `auto_reply_received` is logged to Sheets but not answered
 - replies below the confidence threshold are not sent automatically
 - Instantly interest status is updated where applicable
+- the same business logic works for both local Express and Vercel serverless routes
 
 ## Playbook options
 
