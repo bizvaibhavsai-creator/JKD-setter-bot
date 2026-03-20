@@ -13,7 +13,13 @@ app.get("/healthz", (_req, res) => {
 });
 
 app.post("/webhooks/instantly", async (req, res) => {
-  const token = Array.isArray(req.query.token) ? req.query.token[0] : String(req.query.token || "");
+  const rawToken = req.query.token;
+  const token =
+    typeof rawToken === "string"
+      ? rawToken
+      : Array.isArray(rawToken) && typeof rawToken[0] === "string"
+        ? rawToken[0]
+        : undefined;
   const response = await handleInstantlyWebhookRequest({
     token,
     body: req.body
