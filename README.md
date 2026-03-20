@@ -63,7 +63,7 @@ npm run dev
 Health check:
 
 ```bash
-curl http://localhost:3000/healthz
+curl http://127.0.0.1:3011/healthz
 ```
 
 ## Register the Instantly webhook
